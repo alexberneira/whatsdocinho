@@ -24,20 +24,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Extrair o path completo da URL
-    const { path } = req.query;
+    // Extrair parâmetros da query string ou body
+    const { instance, token, action = 'message' } = req.query;
     
-    if (!path || path.length < 3) {
+    if (!instance || !token) {
       return res.status(400).json({ 
-        error: 'Invalid path',
-        expected: 'instance/{instance}/token/{token}/message',
-        received: path
+        error: 'Missing required parameters',
+        required: ['instance', 'token'],
+        received: { instance, token, action }
       });
     }
     
     // Construir a URL da API Hallo
-    const halloPath = path.join('/');
-    const targetUrl = `https://app.hallo-api.com/v1/${halloPath}`;
+    const targetUrl = `https://app.hallo-api.com/v1/instance/${instance}/token/${token}/${action}`;
     
     console.log('🎯 Target URL:', targetUrl);
     console.log('📋 Request method:', req.method);
