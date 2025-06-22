@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from './lib/supabase';
 import './App.css';
 
 function App() {
@@ -11,19 +12,19 @@ function App() {
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const API_URL = process.env.NODE_ENV === 'production' 
-    ? 'https://whatsdocinho.vercel.app/api' 
-    : 'http://localhost:3001/api';
-
   useEffect(() => {
     fetchContacts();
   }, []);
 
   const fetchContacts = async () => {
     try {
-      const response = await fetch(`${API_URL}/contacts`);
-      const data = await response.json();
-      setContacts(data);
+      const { data, error } = await supabase
+        .from('contacts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setContacts(data || []);
     } catch (error) {
       console.error('Erro ao carregar contatos:', error);
     }
@@ -34,26 +35,26 @@ function App() {
     setLoading(true);
 
     try {
-      const url = editingId 
-        ? `${API_URL}/contacts/${editingId}`
-        : `${API_URL}/contacts`;
-      
-      const method = editingId ? 'PUT' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+      if (editingId) {
+        // Editar contato
+        const { error } = await supabase
+          .from('contacts')
+          .update(formData)
+          .eq('id', editingId);
 
-      if (response.ok) {
-        setFormData({ name: '', phone: '', observation: '' });
-        setEditingId(null);
-        fetchContacts();
+        if (error) throw error;
       } else {
-        const error = await response.json();
-        alert(error.error);
+        // Criar contato
+        const { error } = await supabase
+          .from('contacts')
+          .insert([formData]);
+
+        if (error) throw error;
       }
+
+      setFormData({ name: '', phone: '', observation: '' });
+      setEditingId(null);
+      fetchContacts();
     } catch (error) {
       console.error('Erro ao salvar contato:', error);
       alert('Erro ao salvar contato');
@@ -75,16 +76,13 @@ function App() {
     if (!window.confirm('Tem certeza que deseja deletar este contato?')) return;
 
     try {
-      const response = await fetch(`${API_URL}/contacts/${id}`, {
-        method: 'DELETE'
-      });
+      const { error } = await supabase
+        .from('contacts')
+        .delete()
+        .eq('id', id);
 
-      if (response.ok) {
-        fetchContacts();
-      } else {
-        const error = await response.json();
-        alert(error.error);
-      }
+      if (error) throw error;
+      fetchContacts();
     } catch (error) {
       console.error('Erro ao deletar contato:', error);
       alert('Erro ao deletar contato');
@@ -93,16 +91,16 @@ function App() {
 
   const handleToggleStatus = async (id) => {
     try {
-      const response = await fetch(`${API_URL}/contacts/${id}/toggle`, {
-        method: 'PUT'
-      });
+      const contact = contacts.find(c => c.id === id);
+      const newStatus = !contact.active;
 
-      if (response.ok) {
-        fetchContacts();
-      } else {
-        const error = await response.json();
-        alert(error.error);
-      }
+      const { error } = await supabase
+        .from('contacts')
+        .update({ active: newStatus })
+        .eq('id', id);
+
+      if (error) throw error;
+      fetchContacts();
     } catch (error) {
       console.error('Erro ao alterar status:', error);
       alert('Erro ao alterar status');
@@ -213,7 +211,7 @@ function App() {
                       onClick={() => handleDelete(contact.id)}
                       className="btn-delete"
                     >
-                      Deletar
+                      Excluir
                     </button>
                   </div>
                 </div>
