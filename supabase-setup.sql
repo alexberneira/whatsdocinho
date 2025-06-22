@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS contacts (
   id BIGSERIAL PRIMARY KEY,
   name TEXT NOT NULL,
-  phone TEXT NOT NULL,
+  phone TEXT NOT NULL UNIQUE,
   observation TEXT,
   active BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -35,7 +35,7 @@ INSERT INTO contacts (name, phone, observation) VALUES
   ('João Silva', '11999999999', 'Cliente VIP'),
   ('Maria Santos', '11888888888', 'Primeira compra'),
   ('Pedro Costa', '11777777777', NULL)
-ON CONFLICT DO NOTHING;
+ON CONFLICT (phone) DO NOTHING;
 
 -- Inserir mensagens de exemplo (sem título)
 INSERT INTO messages (media_type, media_url, text_content) VALUES

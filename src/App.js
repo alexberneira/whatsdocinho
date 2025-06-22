@@ -20,6 +20,7 @@ function App() {
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
 
   useEffect(() => {
     fetchContacts();
@@ -30,6 +31,23 @@ function App() {
   useEffect(() => {
     console.log('messageForm atualizado:', messageForm);
   }, [messageForm]);
+
+  // Validar telefone em tempo real
+  useEffect(() => {
+    if (formData.phone) {
+      const existingContact = contacts.find(contact => 
+        contact.phone === formData.phone && contact.id !== editingId
+      );
+      
+      if (existingContact) {
+        setPhoneError(`Telefone já cadastrado para ${existingContact.name}`);
+      } else {
+        setPhoneError('');
+      }
+    } else {
+      setPhoneError('');
+    }
+  }, [formData.phone, contacts, editingId]);
 
   const fetchContacts = async () => {
     try {
@@ -64,6 +82,17 @@ function App() {
     setLoading(true);
 
     try {
+      // Verificar se o telefone já existe (exceto se estiver editando o mesmo contato)
+      const existingContact = contacts.find(contact => 
+        contact.phone === formData.phone && contact.id !== editingId
+      );
+      
+      if (existingContact) {
+        alert(`O telefone ${formData.phone} já está cadastrado para ${existingContact.name}`);
+        setLoading(false);
+        return;
+      }
+
       if (editingId) {
         const { error } = await supabase
           .from('contacts')
@@ -561,7 +590,13 @@ function App() {
                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
                 placeholder="11999999999"
                 required
+                className={phoneError ? 'error' : ''}
               />
+              {phoneError && (
+                <div className="error-message">
+                  ⚠️ {phoneError}
+                </div>
+              )}
             </div>
             
             <div className="form-group">
