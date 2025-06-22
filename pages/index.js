@@ -14,7 +14,8 @@ function App() {
     mediaType: 'text',
     mediaUrl: '',
     textContent: '',
-    selectedFile: null
+    selectedFile: null,
+    selectedFiles: []
   });
   const [editingId, setEditingId] = useState(null);
   const [editingMessageId, setEditingMessageId] = useState(null);
@@ -123,38 +124,15 @@ function App() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validar tamanho do arquivo (50MB máximo para Supabase)
-      const maxSize = 50 * 1024 * 1024; // 50MB em bytes
-      if (file.size > maxSize) {
-        alert(`Arquivo muito grande! Tamanho máximo: 50MB. Seu arquivo: ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
-        e.target.value = '';
-        return;
-      }
+      setMessageForm({...messageForm, selectedFile: file, selectedFiles: []});
+    }
+  };
 
-      // Validar tipo de arquivo
-      const allowedTypes = {
-        photo: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-        video: ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/flv'],
-        file: ['*/*']
-      };
-
-      const currentType = messageForm.mediaType;
-      const isAllowed = allowedTypes[currentType].some(type => {
-        if (type === '*/*') return true;
-        return file.type === type;
-      });
-
-      if (!isAllowed) {
-        alert(`Tipo de arquivo não suportado para ${currentType}. Tipos aceitos: ${allowedTypes[currentType].join(', ')}`);
-        e.target.value = '';
-        return;
-      }
-
-      setMessageForm({
-        ...messageForm,
-        selectedFile: file,
-        mediaUrl: URL.createObjectURL(file)
-      });
+  // Nova função para múltiplos arquivos
+  const handleMultipleFilesChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      setMessageForm({...messageForm, selectedFiles: files, selectedFile: null});
     }
   };
 
@@ -450,303 +428,298 @@ function App() {
       </header>
 
       <main className="App-main">
-        {/* Gerenciamento de Mensagens */}
-        <section className="message-form">
-          <h2>{editingMessageId ? 'Editar Mensagem' : 'Nova Mensagem'}</h2>
-          <form onSubmit={handleMessageSubmit}>
-            <div className="form-group">
-              <label>Tipo de Mídia:</label>
-              <select
-                key={`mediaType-${editingMessageId}`}
-                value={messageForm.mediaType}
-                onChange={(e) => setMessageForm({...messageForm, mediaType: e.target.value, selectedFile: null, mediaUrl: ''})}
-              >
-                <option value="text">Apenas texto</option>
-                <option value="photo">Foto</option>
-                <option value="video">Vídeo</option>
-                <option value="file">Arquivo</option>
-              </select>
-            </div>
-            
-            {messageForm.mediaType !== 'text' && (
+        {/* Coluna Esquerda - Mensagens (mais compacta) */}
+        <div className="messages-column">
+          {/* Gerenciamento de Mensagens */}
+          <section className="message-form">
+            <h2>{editingMessageId ? 'Editar Mensagem' : 'Nova Mensagem'}</h2>
+            <form onSubmit={handleMessageSubmit}>
               <div className="form-group">
-                <label>Arquivo do Dispositivo:</label>
-                <input
-                  key={`file-${editingMessageId}`}
-                  type="file"
-                  onChange={handleFileChange}
-                  accept={
-                    messageForm.mediaType === 'photo' ? 'image/jpeg,image/png,image/gif,image/webp' :
-                    messageForm.mediaType === 'video' ? 'video/mp4,video/avi,video/mov,video/wmv,video/flv' :
-                    '*/*'
-                  }
-                />
-                <small>
-                  {messageForm.mediaType === 'photo' && 'Formatos aceitos: JPG, PNG, GIF, WebP (máx 50MB)'}
-                  {messageForm.mediaType === 'video' && 'Formatos aceitos: MP4, AVI, MOV, WMV, FLV (máx 50MB)'}
-                  {messageForm.mediaType === 'file' && 'Qualquer tipo de arquivo (máx 50MB)'}
-                </small>
-              </div>
-            )}
-            
-            <div style={{marginTop: '10px'}}>
-              <small>Ou cole a URL da mídia abaixo:</small>
-              <input
-                key={`mediaUrl-${editingMessageId}`}
-                type="url"
-                value={messageForm.mediaUrl}
-                onChange={(e) => setMessageForm({...messageForm, mediaUrl: e.target.value, selectedFile: null})}
-                placeholder="https://exemplo.com/imagem.jpg"
-              />
-            </div>
-            
-            <div className="form-group">
-              <label>Texto da Mensagem:</label>
-              <textarea
-                key={`textContent-${editingMessageId}`}
-                value={messageForm.textContent}
-                onChange={(e) => setMessageForm({...messageForm, textContent: e.target.value})}
-                placeholder="Digite a mensagem que será enviada..."
-                rows="4"
-              />
-            </div>
-            
-            <div className="form-actions">
-              <button type="submit" disabled={messageLoading}>
-                {messageLoading ? 'Salvando...' : (editingMessageId ? 'Atualizar' : 'Salvar')}
-              </button>
-              {editingMessageId && (
-                <button 
-                  type="button" 
-                  onClick={() => {
-                    setMessageForm({ 
-                      mediaType: 'text', 
-                      mediaUrl: '', 
-                      textContent: '', 
-                      selectedFile: null 
-                    });
-                    setEditingMessageId(null);
-                  }}
+                <label>Tipo de Mídia:</label>
+                <select
+                  key={`mediaType-${editingMessageId}`}
+                  value={messageForm.mediaType}
+                  onChange={(e) => setMessageForm({...messageForm, mediaType: e.target.value, selectedFile: null, mediaUrl: ''})}
                 >
-                  Cancelar
-                </button>
+                  <option value="text">Apenas texto</option>
+                  <option value="photo">Foto</option>
+                  <option value="video">Vídeo</option>
+                  <option value="file">Arquivo</option>
+                </select>
+              </div>
+              
+              {messageForm.mediaType !== 'text' && (
+                <div className="form-group">
+                  <label>Arquivo do Dispositivo:</label>
+                  <input
+                    key={`file-${editingMessageId}`}
+                    type="file"
+                    onChange={handleFileChange}
+                    accept={
+                      messageForm.mediaType === 'photo' ? 'image/jpeg,image/png,image/gif,image/webp' :
+                      messageForm.mediaType === 'video' ? 'video/mp4,video/avi,video/mov,video/wmv,video/flv' :
+                      '*/*'
+                    }
+                  />
+                  <small>
+                    {messageForm.mediaType === 'photo' && 'Formatos aceitos: JPG, PNG, GIF, WebP (máx 50MB)'}
+                    {messageForm.mediaType === 'video' && 'Formatos aceitos: MP4, AVI, MOV, WMV, FLV (máx 50MB)'}
+                    {messageForm.mediaType === 'file' && 'Qualquer tipo de arquivo (máx 50MB)'}
+                  </small>
+                </div>
               )}
-            </div>
-          </form>
-        </section>
+              
+              {messageForm.mediaType !== 'text' && (
+                <div className="form-group">
+                  <label>Ou cole a URL da mídia:</label>
+                  <input
+                    key={`mediaUrl-${editingMessageId}`}
+                    type="url"
+                    value={messageForm.mediaUrl}
+                    onChange={(e) => setMessageForm({...messageForm, mediaUrl: e.target.value, selectedFile: null})}
+                    placeholder="https://exemplo.com/imagem.jpg"
+                  />
+                </div>
+              )}
+              
+              <div className="form-group">
+                <label>Texto da Mensagem:</label>
+                <textarea
+                  key={`textContent-${editingMessageId}`}
+                  value={messageForm.textContent}
+                  onChange={(e) => setMessageForm({...messageForm, textContent: e.target.value})}
+                  placeholder="Digite a mensagem que será enviada..."
+                  rows="4"
+                />
+              </div>
+              
+              <div className="form-actions">
+                <button type="submit" disabled={messageLoading}>
+                  {messageLoading ? 'Salvando...' : (editingMessageId ? 'Atualizar' : 'Salvar')}
+                </button>
+                {editingMessageId && (
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setMessageForm({ 
+                        mediaType: 'text', 
+                        mediaUrl: '', 
+                        textContent: '', 
+                        selectedFile: null 
+                      });
+                      setEditingMessageId(null);
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                )}
+              </div>
+            </form>
+          </section>
 
-        {/* Preview da Mensagem */}
-        <section className="message-preview">
-          <h3>Preview da Mensagem</h3>
-          {renderMessagePreview()}
-        </section>
+          {/* Preview da Mensagem */}
+          <section className="message-preview">
+            <h3>Preview da Mensagem</h3>
+            {renderMessagePreview()}
+          </section>
 
-        {/* Lista de Mensagens */}
-        <section className="messages-list">
-          <h2>Mensagens Salvas ({messages.length})</h2>
-          {messages.length === 0 ? (
-            <p className="no-messages">Nenhuma mensagem salva</p>
-          ) : (
-            <div className="messages-grid">
-              {messages.map(message => (
-                <div key={message.id} className={`message-card ${!message.active ? 'inactive' : ''}`}>
-                  <div className="message-header">
-                    <h3>Mensagem #{message.id}</h3>
-                    <span className={`status ${message.active ? 'active' : 'inactive'}`}>
-                      {message.active ? 'Ativa' : 'Inativa'}
-                    </span>
-                  </div>
-                  
-                  {/* Preview da mensagem no card */}
-                  <div className="message-preview-card">
-                    <div className="whatsapp-preview-mini">
-                      <div className="whatsapp-header-mini">
-                        <div className="whatsapp-avatar-mini">👤</div>
-                        <div className="whatsapp-info-mini">
-                          <div className="whatsapp-name-mini">Você</div>
-                          <div className="whatsapp-time-mini">Agora</div>
+          {/* Lista de Mensagens */}
+          <section className="messages-section">
+            <h2>Mensagens Salvas ({messages.length})</h2>
+            {messages.length === 0 ? (
+              <div className="preview-empty">
+                <p>Nenhuma mensagem salva</p>
+              </div>
+            ) : (
+              <div className="messages-list">
+                {messages.map(message => (
+                  <div key={message.id} className={`message-item ${!message.active ? 'inactive' : ''}`}>
+                    <div className="message-info">
+                      <p><strong>ID:</strong> #{message.id}</p>
+                      <p><strong>Tipo:</strong> {message.media_type}</p>
+                      {message.media_type !== 'text' && message.media_url && (
+                        <div className="message-media-preview">
+                          {message.media_type === 'photo' && (
+                            <img 
+                              src={message.media_url} 
+                              alt="Mídia da mensagem" 
+                              onError={(e) => e.target.style.display = 'none'}
+                            />
+                          )}
+                          {message.media_type === 'video' && (
+                            <video controls>
+                              <source src={message.media_url} />
+                              Seu navegador não suporta vídeos.
+                            </video>
+                          )}
+                          {message.media_type === 'file' && (
+                            <div className="file-indicator">
+                              📎 Arquivo anexado
+                            </div>
+                          )}
                         </div>
-                      </div>
-                      <div className="whatsapp-message-mini">
-                        {message.media_type !== 'text' && message.media_url && (
-                          <div className="media-preview-mini">
-                            {message.media_type === 'photo' && (
-                              <img 
-                                src={message.media_url} 
-                                alt="Preview" 
-                                onError={(e) => e.target.style.display = 'none'} 
-                              />
-                            )}
-                            {message.media_type === 'video' && (
-                              <div className="video-preview-mini">
-                                <video>
-                                  <source src={message.media_url} />
-                                </video>
-                                <div className="play-icon">▶️</div>
-                              </div>
-                            )}
-                            {message.media_type === 'file' && (
-                              <div className="file-preview-mini">
-                                📎 Arquivo anexado
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        {message.text_content && (
-                          <div className="text-preview-mini">
-                            {message.text_content.length > 100 
-                              ? `${message.text_content.substring(0, 100)}...` 
-                              : message.text_content
-                            }
-                          </div>
-                        )}
-                      </div>
+                      )}
+                      {message.text_content && (
+                        <p><strong>Texto:</strong> {message.text_content.length > 50 
+                          ? `${message.text_content.substring(0, 50)}...` 
+                          : message.text_content
+                        }</p>
+                      )}
+                      <p><strong>Status:</strong> 
+                        <span className={`status ${message.active ? 'active' : 'inactive'}`}>
+                          {message.active ? 'Ativa' : 'Inativa'}
+                        </span>
+                      </p>
+                    </div>
+                    
+                    <div className="message-actions">
+                      <button 
+                        onClick={() => handleEditMessage(message)}
+                        className="btn-edit"
+                      >
+                        Editar
+                      </button>
+                      <button 
+                        onClick={() => handleToggleMessageStatus(message.id)}
+                        className={`btn-toggle ${message.active ? 'btn-deactivate' : 'btn-activate'}`}
+                      >
+                        {message.active ? 'Desativar' : 'Ativar'}
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteMessage(message.id)}
+                        className="btn-delete"
+                      >
+                        Excluir
+                      </button>
                     </div>
                   </div>
-                  
-                  <div className="message-actions">
-                    <button 
-                      onClick={() => handleEditMessage(message)}
-                      className="btn-edit"
-                    >
-                      Editar
-                    </button>
-                    <button 
-                      onClick={() => handleToggleMessageStatus(message.id)}
-                      className={`btn-toggle ${message.active ? 'btn-deactivate' : 'btn-activate'}`}
-                    >
-                      {message.active ? 'Desativar' : 'Ativar'}
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteMessage(message.id)}
-                      className="btn-delete"
-                    >
-                      Excluir
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
 
-        {/* Formulário de Cadastro de Contatos */}
-        <section className="contact-form">
-          <h2>{editingId ? 'Editar Contato' : 'Novo Contato'}</h2>
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label>Nome:</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                placeholder="Nome do contato"
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <label>Telefone (com DDD):</label>
-              <input
-                type="text"
-                value={formData.phone}
-                onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                placeholder="11999999999"
-                required
-                className={phoneError ? 'error' : ''}
-              />
-              {phoneError && (
-                <div className="error-message">
-                  ⚠️ {phoneError}
-                </div>
-              )}
-            </div>
-            
-            <div className="form-group">
-              <label>Observação:</label>
-              <textarea
-                value={formData.observation}
-                onChange={(e) => setFormData({...formData, observation: e.target.value})}
-                placeholder="Observações sobre o contato"
-                rows="3"
-              />
-            </div>
-            
-            <div className="form-actions">
-              <button type="submit" disabled={loading}>
-                {loading ? 'Salvando...' : (editingId ? 'Atualizar' : 'Cadastrar')}
-              </button>
-              {editingId && (
-                <button 
-                  type="button" 
-                  onClick={() => {
-                    setFormData({ name: '', phone: '', observation: '' });
-                    setEditingId(null);
-                  }}
-                >
-                  Cancelar
+        {/* Coluna Direita - Contatos (largura total) */}
+        <div className="contacts-column">
+          {/* Formulário de Cadastro de Contatos */}
+          <section className="message-form">
+            <h2>{editingId ? 'Editar Contato' : 'Novo Contato'}</h2>
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label>Nome:</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  placeholder="Nome do contato"
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Telefone (com DDD):</label>
+                <input
+                  type="text"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  placeholder="11999999999"
+                  required
+                  className={phoneError ? 'error' : ''}
+                />
+                {phoneError && (
+                  <div className="error-message">
+                    ⚠️ {phoneError}
+                  </div>
+                )}
+              </div>
+              
+              <div className="form-group">
+                <label>Observação:</label>
+                <textarea
+                  value={formData.observation}
+                  onChange={(e) => setFormData({...formData, observation: e.target.value})}
+                  placeholder="Observações sobre o contato"
+                  rows="3"
+                />
+              </div>
+              
+              <div className="form-actions">
+                <button type="submit" disabled={loading}>
+                  {loading ? 'Salvando...' : (editingId ? 'Atualizar' : 'Cadastrar')}
                 </button>
-              )}
-            </div>
-          </form>
-        </section>
+                {editingId && (
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setFormData({ name: '', phone: '', observation: '' });
+                      setEditingId(null);
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                )}
+              </div>
+            </form>
+          </section>
 
-        {/* Lista de Contatos */}
-        <section className="contacts-list">
-          <h2>Contatos Cadastrados ({contacts.length})</h2>
-          {contacts.length === 0 ? (
-            <p className="no-contacts">Nenhum contato cadastrado</p>
-          ) : (
-            <div className="contacts-grid">
-              {contacts.map(contact => (
-                <div key={contact.id} className={`contact-card ${!contact.active ? 'inactive' : ''}`}>
-                  <div className="contact-header">
-                    <h3>{contact.name}</h3>
-                    <span className={`status ${contact.active ? 'active' : 'inactive'}`}>
-                      {contact.active ? 'Ativo' : 'Inativo'}
-                    </span>
+          {/* Lista de Contatos */}
+          <section className="contacts-section">
+            <h2>Contatos Cadastrados ({contacts.length})</h2>
+            {contacts.length === 0 ? (
+              <div className="preview-empty">
+                <p>Nenhum contato cadastrado</p>
+              </div>
+            ) : (
+              <div className="contacts-list">
+                {contacts.map(contact => (
+                  <div key={contact.id} className={`contact-item ${!contact.active ? 'inactive' : ''}`}>
+                    <div className="contact-info">
+                      <p><strong>Nome:</strong> {contact.name}</p>
+                      <p><strong>Telefone:</strong> {contact.phone}</p>
+                      {contact.observation && (
+                        <p><strong>Observação:</strong> {contact.observation}</p>
+                      )}
+                      <p><strong>Criado em:</strong> {new Date(contact.created_at).toLocaleDateString()}</p>
+                      <p><strong>Status:</strong> 
+                        <span className={`status ${contact.active ? 'active' : 'inactive'}`}>
+                          {contact.active ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </p>
+                    </div>
+                    
+                    <div className="contact-actions">
+                      <button 
+                        onClick={() => handleEdit(contact)}
+                        className="btn-edit"
+                      >
+                        Editar
+                      </button>
+                      <button 
+                        onClick={() => handleToggleStatus(contact.id)}
+                        className={`btn-toggle ${contact.active ? 'btn-deactivate' : 'btn-activate'}`}
+                      >
+                        {contact.active ? 'Desativar' : 'Ativar'}
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(contact.id)}
+                        className="btn-delete"
+                      >
+                        Excluir
+                      </button>
+                      <button 
+                        className="btn-test-send"
+                        onClick={() => handleTestSend(contact)}
+                        disabled={sendingId === contact.id}
+                      >
+                        {sendingId === contact.id ? 'Enviando...' : 'Testar envio'}
+                      </button>
+                    </div>
                   </div>
-                  
-                  <div className="contact-info">
-                    <p><strong>Telefone:</strong> {contact.phone}</p>
-                    {contact.observation && (
-                      <p><strong>Observação:</strong> {contact.observation}</p>
-                    )}
-                    <p><strong>Criado em:</strong> {new Date(contact.created_at).toLocaleDateString()}</p>
-                  </div>
-                  
-                  <div className="contact-actions">
-                    <button 
-                      onClick={() => handleEdit(contact)}
-                      className="btn-edit"
-                    >
-                      Editar
-                    </button>
-                    <button 
-                      onClick={() => handleToggleStatus(contact.id)}
-                      className={`btn-toggle ${contact.active ? 'btn-deactivate' : 'btn-activate'}`}
-                    >
-                      {contact.active ? 'Desativar' : 'Ativar'}
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(contact.id)}
-                      className="btn-delete"
-                    >
-                      Excluir
-                    </button>
-                    <button 
-                      className="btn-test-send"
-                      onClick={() => handleTestSend(contact)}
-                      disabled={sendingId === contact.id}
-                    >
-                      {sendingId === contact.id ? 'Enviando...' : 'Testar envio'}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
       </main>
     </div>
   );
