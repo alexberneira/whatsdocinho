@@ -1,3 +1,5 @@
+import { Readable } from 'stream';
+
 export default async function handler(req, res) {
   const { path = [] } = req.query;
   const targetUrl = `https://app.hallo-api.com/v1/${path.join('/')}`;
@@ -10,9 +12,13 @@ export default async function handler(req, res) {
   };
   delete fetchOptions.headers.host;
 
-  // Só envie body para métodos que aceitam
+  // Ler o body como buffer para métodos que aceitam
   if (!['GET', 'HEAD'].includes(req.method)) {
-    fetchOptions.body = req.body;
+    const buffers = [];
+    for await (const chunk of req) {
+      buffers.push(chunk);
+    }
+    fetchOptions.body = Buffer.concat(buffers);
   }
 
   // Fazer proxy para a API Hallo
@@ -25,4 +31,11 @@ export default async function handler(req, res) {
   });
   res.status(response.status);
   res.send(Buffer.from(data));
-} 
+}
+
+// Desabilitar o bodyParser do Next.js para permitir streaming do body
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+}; 
