@@ -1,5 +1,3 @@
-import { Readable } from 'stream';
-
 export default async function handler(req, res) {
   const { path = [] } = req.query;
   const { instance, token, action } = req.query;
@@ -20,6 +18,7 @@ export default async function handler(req, res) {
 
   console.log('🎯 Target URL:', targetUrl);
   console.log('📋 Request method:', req.method);
+  console.log('📋 Request body:', req.body);
 
   const fetchOptions = {
     method: req.method,
@@ -27,28 +26,26 @@ export default async function handler(req, res) {
   };
   delete fetchOptions.headers.host;
 
-  // Ler o body como buffer para métodos que aceitam
-  if (!['GET', 'HEAD'].includes(req.method)) {
-    const buffers = [];
-    for await (const chunk of req) {
-      buffers.push(chunk);
-    }
-    fetchOptions.body = Buffer.concat(buffers);
+  // Adicionar body para métodos que aceitam
+  if (!['GET', 'HEAD'].includes(req.method) && req.body) {
+    fetchOptions.body = JSON.stringify(req.body);
+    fetchOptions.headers['content-type'] = 'application/json';
   }
 
-  const response = await fetch(targetUrl, fetchOptions);
-  const data = await response.arrayBuffer();
+  try {
+    const response = await fetch(targetUrl, fetchOptions);
+    const data = await response.text();
 
-  response.headers.forEach((value, key) => {
-    res.setHeader(key, value);
-  });
-  res.status(response.status);
-  res.send(Buffer.from(data));
-}
+    console.log('📥 Response status:', response.status);
+    console.log('📄 Response data:', data);
 
-// Desabilitar o bodyParser do Next.js para permitir streaming do body
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-}; 
+    response.headers.forEach((value, key) => {
+      res.setHeader(key, value);
+    });
+    res.status(response.status);
+    res.send(data);
+  } catch (error) {
+    console.error('❌ Proxy error:', error);
+    res.status(500).json({ error: 'Proxy error', details: error.message });
+  }
+} 
