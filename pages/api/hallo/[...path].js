@@ -2,13 +2,28 @@ import { Readable } from 'stream';
 
 export default async function handler(req, res) {
   const { path = [] } = req.query;
-  const targetUrl = `https://app.hallo-api.com/v1/${path.join('/')}`;
+  const { instance, token, action } = req.query;
+  
+  let targetUrl;
+  
+  // Se temos query parameters, construir URL com eles
+  if (instance && token) {
+    if (action) {
+      targetUrl = `https://app.hallo-api.com/v1/instance/${instance}/token/${token}/${action}`;
+    } else {
+      targetUrl = `https://app.hallo-api.com/v1/instance/${instance}/token/${token}/message`;
+    }
+  } else {
+    // Caso contrário, usar path parameters
+    targetUrl = `https://app.hallo-api.com/v1/${path.join('/')}`;
+  }
 
-  // Montar opções para o fetch
+  console.log('🎯 Target URL:', targetUrl);
+  console.log('📋 Request method:', req.method);
+
   const fetchOptions = {
     method: req.method,
     headers: { ...req.headers },
-    // Não envie o host original
   };
   delete fetchOptions.headers.host;
 
@@ -21,11 +36,9 @@ export default async function handler(req, res) {
     fetchOptions.body = Buffer.concat(buffers);
   }
 
-  // Fazer proxy para a API Hallo
   const response = await fetch(targetUrl, fetchOptions);
   const data = await response.arrayBuffer();
 
-  // Repasse todos os headers da resposta
   response.headers.forEach((value, key) => {
     res.setHeader(key, value);
   });
