@@ -28,9 +28,8 @@ REACT_APP_HALLO_INSTANCE=nome_da_sua_instancia
 
 ### **Envio de Mensagens:**
 - ✅ **Texto**: `halloAPI.sendTextMessage(phone, message)`
-- ✅ **Imagem**: `halloAPI.sendImageMessage(phone, imageUrl, caption)`
-- ✅ **Vídeo**: `halloAPI.sendVideoMessage(phone, videoUrl, caption)`
-- ✅ **Documento**: `halloAPI.sendDocumentMessage(phone, documentUrl, filename)`
+- ✅ **Mídia**: `halloAPI.sendMediaMessage(phone, mediaUrl, mediaType, caption)`
+- ✅ **Genérico**: `halloAPI.sendMessage({ number, text, image, video, document })`
 
 ### **Gerenciamento de Conexão:**
 - ✅ **Verificar Status**: `halloAPI.checkConnection()`

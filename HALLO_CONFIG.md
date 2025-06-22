@@ -49,14 +49,13 @@ Quando funcionando corretamente, a API retorna:
 }
 ```
 
-## Métodos disponíveis
+## Métodos Disponíveis
 
 - `sendTextMessage(phoneNumber, message)` - Envia mensagem de texto
-- `sendImageMessage(phoneNumber, imageUrl, caption)` - Envia imagem
-- `sendVideoMessage(phoneNumber, videoUrl, caption)` - Envia vídeo
-- `sendDocumentMessage(phoneNumber, documentUrl, filename)` - Envia documento
+- `sendMediaMessage(phoneNumber, mediaUrl, mediaType, caption)` - Envia mídia (imagem, vídeo, documento)
+- `sendMessage(messageData)` - Método genérico para enviar qualquer tipo de mensagem
 - `checkConnection()` - Verifica status da conexão
-- `getQRCode()` - Obtém QR code para conexão
+- `getQRCode()` - Obtém QR Code da instância
 - `disconnect()` - Desconecta a instância
 
 ## 📋 **Como obter as credenciais:**

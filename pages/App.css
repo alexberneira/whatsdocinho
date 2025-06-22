@@ -951,3 +951,88 @@ body {
 .message-item:has(.message-media-preview):hover {
   background: linear-gradient(135deg, #f1f3f4 0%, #e8eaed 100%);
 }
+
+.btn-send-all {
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+  margin-left: 6px;
+  flex: none;
+  min-width: auto;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-send-all::before {
+  content: '📤';
+  font-size: 12px;
+  margin-right: 5px;
+}
+
+.btn-send-all:hover {
+  background: linear-gradient(135deg, #45a049 0%, #388e3c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+}
+
+.btn-send-all:disabled {
+  background: linear-gradient(135deg, #9e9e9e 0%, #757575 100%);
+  color: #fff;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 4px 15px rgba(158, 158, 158, 0.3);
+}
+
+.btn-send-all:disabled:hover {
+  transform: none;
+  box-shadow: 0 4px 15px rgba(158, 158, 158, 0.3);
+}
+
+.btn-send-all:disabled::before {
+  content: '⏳';
+  font-size: 12px;
+  margin-right: 5px;
+}
+
+/* Melhorias para o layout dos botões */
+.message-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.message-actions .btn-edit,
+.message-actions .btn-toggle,
+.message-actions .btn-delete {
+  flex: 1;
+  min-width: 80px;
+}
+
+.message-actions .btn-send-all {
+  flex: 2;
+  min-width: 140px;
+}
+
+/* Responsividade para os botões */
+@media (max-width: 480px) {
+  .message-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .message-actions .btn-edit,
+  .message-actions .btn-toggle,
+  .message-actions .btn-delete,
+  .message-actions .btn-send-all {
+    flex: none;
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .btn-send-all {
+    margin-left: 0;
+    margin-top: 0;
+  }
+}

@@ -3,6 +3,9 @@ import { supabase } from '../lib/supabase';
 import halloAPI from '../lib/hallo';
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [contacts, setContacts] = useState([]);
   const [messages, setMessages] = useState([]);
   const [formData, setFormData] = useState({
@@ -23,11 +26,24 @@ function App() {
   const [messageLoading, setMessageLoading] = useState(false);
   const [phoneError, setPhoneError] = useState('');
   const [sendingId, setSendingId] = useState(null);
+  const [sendingToAllId, setSendingToAllId] = useState(null);
+  const [sendingProgress, setSendingProgress] = useState({ current: 0, total: 0 });
 
+  // Verificar se já está autenticado (sessionStorage)
   useEffect(() => {
-    fetchContacts();
-    fetchMessages();
+    const authStatus = sessionStorage.getItem('whatsdocinho_authenticated');
+    if (authStatus === 'true') {
+      setIsAuthenticated(true);
+    }
   }, []);
+
+  // Carregar dados quando autenticado
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchContacts();
+      fetchMessages();
+    }
+  }, [isAuthenticated]);
 
   // Debug: monitorar mudanças no messageForm
   useEffect(() => {
@@ -50,6 +66,27 @@ function App() {
       setPhoneError('');
     }
   }, [formData.phone, contacts, editingId]);
+
+  // Função para autenticar
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setPasswordError('');
+    
+    if (password === 'Caio15Noah18') {
+      setIsAuthenticated(true);
+      sessionStorage.setItem('whatsdocinho_authenticated', 'true');
+    } else {
+      setPasswordError('Senha incorreta');
+      setPassword('');
+    }
+  };
+
+  // Função para logout
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('whatsdocinho_authenticated');
+    setPassword('');
+  };
 
   const fetchContacts = async () => {
     try {
@@ -78,6 +115,44 @@ function App() {
       console.error('Erro ao carregar mensagens:', error);
     }
   };
+
+  // Se não está autenticado, mostrar tela de login
+  if (!isAuthenticated) {
+    return (
+      <div className="login-container">
+        <div className="login-box">
+          <div className="login-header">
+            <h1>🔐 WhatsDocinho</h1>
+            <p>Gerenciador de Contatos e Mensagens WhatsApp</p>
+          </div>
+          
+          <form onSubmit={handleLogin} className="login-form">
+            <div className="form-group">
+              <label htmlFor="password">Senha de Acesso:</label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Digite a senha"
+                required
+                autoFocus
+              />
+              {passwordError && <div className="error-message">{passwordError}</div>}
+            </div>
+            
+            <button type="submit" className="login-button">
+              🔓 Entrar
+            </button>
+          </form>
+          
+          <div className="login-footer">
+            <p>⚠️ Acesso restrito - Senha necessária</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -375,6 +450,68 @@ function App() {
     }
   };
 
+  const handleSendToAll = async (message) => {
+    // Filtrar apenas contatos ativos
+    const activeContacts = contacts.filter(contact => contact.active);
+    
+    if (activeContacts.length === 0) {
+      alert('Não há contatos ativos para enviar mensagens.');
+      return;
+    }
+
+    if (!confirm(`Deseja enviar esta mensagem para todos os ${activeContacts.length} contatos ativos?\n\nCada envio terá um intervalo de 30 segundos.`)) {
+      return;
+    }
+
+    setSendingToAllId(message.id);
+    setSendingProgress({ current: 0, total: activeContacts.length });
+
+    try {
+      for (let i = 0; i < activeContacts.length; i++) {
+        const contact = activeContacts[i];
+        
+        // Atualizar progresso
+        setSendingProgress({ current: i + 1, total: activeContacts.length });
+        
+        console.log(`Enviando para ${contact.name} (${i + 1}/${activeContacts.length})`);
+        
+        // Preparar dados da mensagem
+        let messageData = {
+          number: contact.phone,
+          text: message.text_content || ''
+        };
+
+        // Adicionar mídia se houver
+        if (message.media_type !== 'text' && message.media_url) {
+          if (message.media_type === 'photo') {
+            messageData.image = message.media_url;
+          } else if (message.media_type === 'video') {
+            messageData.video = message.media_url;
+          } else if (message.media_type === 'file') {
+            messageData.document = message.media_url;
+          }
+        }
+
+        // Enviar mensagem
+        await halloAPI.sendMessage(messageData);
+        
+        // Aguardar 30 segundos antes do próximo envio (exceto no último)
+        if (i < activeContacts.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 30000));
+        }
+      }
+
+      alert(`✅ Mensagem enviada com sucesso para todos os ${activeContacts.length} contatos ativos!`);
+      
+    } catch (error) {
+      console.error('Erro ao enviar para todos:', error);
+      alert(`❌ Erro ao enviar mensagem: ${error.message}`);
+    } finally {
+      setSendingToAllId(null);
+      setSendingProgress({ current: 0, total: 0 });
+    }
+  };
+
   const renderMessagePreview = () => {
     if (!messageForm.textContent && !messageForm.mediaUrl && !messageForm.selectedFile) {
       return <div className="preview-empty">Digite uma mensagem para ver o preview</div>;
@@ -423,8 +560,15 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>WhatsDocinho</h1>
-        <p>Gerenciador de Contatos e Mensagens WhatsApp</p>
+        <div className="header-content">
+          <div className="header-title">
+            <h1>WhatsDocinho</h1>
+            <p>Gerenciador de Contatos e Mensagens WhatsApp</p>
+          </div>
+          <button onClick={handleLogout} className="logout-button">
+            🚪 Sair
+          </button>
+        </div>
       </header>
 
       <main className="App-main">
@@ -590,6 +734,19 @@ function App() {
                         className="btn-delete"
                       >
                         Excluir
+                      </button>
+                      <button 
+                        className="btn-send-all"
+                        onClick={() => handleSendToAll(message)}
+                        disabled={sendingToAllId === message.id}
+                      >
+                        {sendingToAllId === message.id ? (
+                          <span>
+                            Enviando... ({sendingProgress.current}/{sendingProgress.total})
+                          </span>
+                        ) : (
+                          <span>📤 Enviar para Todos</span>
+                        )}
                       </button>
                     </div>
                   </div>

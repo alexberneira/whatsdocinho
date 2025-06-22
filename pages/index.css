@@ -11,3 +11,175 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Estilos para a tela de login */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.login-box {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.login-header h1 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.login-header p {
+  margin: 0 0 30px 0;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.login-form {
+  text-align: left;
+}
+
+.login-form .form-group {
+  margin-bottom: 20px;
+}
+
+.login-form label {
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.login-form input {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #e1e5e9;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.login-form input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.login-button {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.login-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.login-footer {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e1e5e9;
+}
+
+.login-footer p {
+  margin: 0;
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 0.9rem;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* Estilos para o header com botão de logout */
+.App-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header-title h1 {
+  margin: 0 0 5px 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.header-title p {
+  margin: 0;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.logout-button {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.logout-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Responsividade para o header */
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .header-title h1 {
+    font-size: 2rem;
+  }
+  
+  .header-title p {
+    font-size: 1rem;
+  }
+  
+  .logout-button {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
+}
