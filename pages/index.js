@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from './lib/supabase';
-import './App.css';
+import { supabase } from '../lib/supabase';
+import halloAPI from '../lib/hallo';
 
 function App() {
   const [contacts, setContacts] = useState([]);
@@ -21,6 +21,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState(false);
   const [phoneError, setPhoneError] = useState('');
+  const [sendingId, setSendingId] = useState(null);
 
   useEffect(() => {
     fetchContacts();
@@ -331,6 +332,68 @@ function App() {
     } catch (error) {
       console.error('Erro ao alterar status da mensagem:', error);
       alert('Erro ao alterar status da mensagem');
+    }
+  };
+
+  const handleTestSend = async (contact) => {
+    setSendingId(contact.id);
+    try {
+      // Encontrar a mensagem ativa
+      const activeMessage = messages.find(message => message.active);
+      
+      if (!activeMessage) {
+        alert('❌ Nenhuma mensagem ativa encontrada!\n\nPara testar o envio, você precisa:\n1. Criar uma mensagem\n2. Ativá-la usando o botão "Ativar"');
+        return;
+      }
+
+      console.log('Tentando enviar mensagem para:', contact.phone);
+      console.log('Mensagem ativa:', activeMessage);
+      console.log('Configuração Hallo:', {
+        baseURL: halloAPI.baseURL,
+        instanceName: halloAPI.instanceName,
+        isConfigured: halloAPI.isConfigured()
+      });
+      
+      let result;
+      
+      // Verificar se a mensagem tem mídia
+      if (activeMessage.media_type !== 'text' && activeMessage.media_url) {
+        // Enviar mídia com legenda (texto)
+        console.log('📸 Enviando mídia com legenda...');
+        result = await halloAPI.sendMediaMessage(
+          contact.phone,
+          activeMessage.media_url,
+          activeMessage.media_type,
+          activeMessage.text_content || ''
+        );
+      } else if (activeMessage.text_content) {
+        // Enviar apenas texto
+        console.log('📝 Enviando apenas texto...');
+        result = await halloAPI.sendTextMessage(
+          contact.phone,
+          activeMessage.text_content
+        );
+      } else {
+        alert('❌ A mensagem ativa não possui conteúdo válido!\n\nPara testar o envio, a mensagem ativa deve conter:\n- Texto, OU\n- Mídia (imagem, vídeo, documento)');
+        return;
+      }
+      
+      console.log('Resultado:', result);
+      
+      if (result.success) {
+        const mediaInfo = activeMessage.media_type !== 'text' && activeMessage.media_url 
+          ? `\n🖼️ Mídia: ${activeMessage.media_type} (${activeMessage.media_url})`
+          : '';
+        
+        alert(`✅ Mensagem enviada com sucesso!\n\n📱 Para: ${contact.name} (${contact.phone})${mediaInfo}\n📝 Texto: "${activeMessage.text_content || 'Sem texto'}"\n\nID da mensagem: ${result.messageId || 'N/A'}\nID da instância: ${result.instanceId || 'N/A'}`);
+      } else {
+        alert(`❌ ${result.message}\n\nDetalhes: ${JSON.stringify(result.details, null, 2)}`);
+      }
+    } catch (error) {
+      console.error('Erro detalhado:', error);
+      alert('Erro ao enviar mensagem: ' + (error.message || error));
+    } finally {
+      setSendingId(null);
     }
   };
 
@@ -670,6 +733,13 @@ function App() {
                       className="btn-delete"
                     >
                       Excluir
+                    </button>
+                    <button 
+                      className="btn-test-send"
+                      onClick={() => handleTestSend(contact)}
+                      disabled={sendingId === contact.id}
+                    >
+                      {sendingId === contact.id ? 'Enviando...' : 'Testar envio'}
                     </button>
                   </div>
                 </div>

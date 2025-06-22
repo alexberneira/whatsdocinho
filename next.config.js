@@ -1,12 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ['better-sqlite3']
-  },
-  output: 'standalone',
+  reactStrictMode: true,
   images: {
     unoptimized: true
-  }
+  },
+  // Configuração para API Routes
+  async rewrites() {
+    return [
+      {
+        source: '/api/hallo/:path*',
+        destination: '/api/hallo',
+      },
+    ];
+  },
 }
 
 module.exports = nextConfig 

@@ -1,70 +1,163 @@
-# Getting Started with Create React App
+# WhatsDocinho 🚀
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Gerenciador de contatos e mensagens WhatsApp integrado com Supabase e API Hallo.
 
-## Available Scripts
+## ✨ Funcionalidades
 
-In the project directory, you can run:
+- 📱 **Gerenciamento de Contatos**: Cadastro, edição e exclusão de contatos
+- 💬 **Templates de Mensagens**: Criação de mensagens com texto e mídia
+- 📤 **Envio via WhatsApp**: Integração com API Hallo para envio de mensagens
+- 🎨 **Interface Moderna**: Design responsivo com Tailwind CSS
+- ☁️ **Backend Cloud**: Supabase para persistência de dados
 
-### `npm start`
+## 🚀 Deploy na Vercel
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 1. **Preparar o Repositório**
+```bash
+# Fazer commit das alterações
+git add .
+git commit -m "Preparar para deploy na Vercel"
+git push origin main
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 2. **Conectar na Vercel**
+1. Acesse [vercel.com](https://vercel.com)
+2. Faça login com GitHub/GitLab
+3. Clique em "New Project"
+4. Importe seu repositório
+5. Configure as variáveis de ambiente (veja abaixo)
 
-### `npm test`
+### 3. **Variáveis de Ambiente**
+Configure no painel da Vercel:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=sua_url_do_supabase
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anonima_do_supabase
 
-### `npm run build`
+# Hallo API
+NEXT_PUBLIC_HALLO_API_URL=https://app.hallo-api.com/v1
+NEXT_PUBLIC_HALLO_API_KEY=seu_token_da_api_hallo
+NEXT_PUBLIC_HALLO_INSTANCE=seu_id_da_instancia
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 4. **Deploy Automático**
+- A Vercel detectará automaticamente que é um projeto Next.js
+- O deploy será feito automaticamente a cada push
+- URL será gerada automaticamente
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🛠️ Desenvolvimento Local
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Pré-requisitos
+- Node.js 18+
+- npm ou yarn
+- Conta no Supabase
+- Conta na API Hallo
 
-### `npm run eject`
+### Instalação
+```bash
+# Clonar o repositório
+git clone https://github.com/seu-usuario/whatsdocinho.git
+cd whatsdocinho
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+# Instalar dependências
+npm install
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+# Configurar variáveis de ambiente
+cp env.example .env.local
+# Editar .env.local com suas credenciais
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+# Executar em desenvolvimento
+npm run dev
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Scripts Disponíveis
+```bash
+npm run dev          # Desenvolvimento local
+npm run build        # Build de produção
+npm run start        # Servidor de produção
+npm run lint         # Verificar código
+npm run proxy        # Proxy local para API Hallo
+```
 
-## Learn More
+## 📋 Configuração das APIs
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Supabase
+1. Crie uma conta em [supabase.com](https://supabase.com)
+2. Crie um novo projeto
+3. Execute o SQL em `supabase-setup.sql`
+4. Copie as credenciais para `.env.local`
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### API Hallo
+1. Acesse [app.hallo-api.com](https://app.hallo-api.com)
+2. Crie uma conta e instância
+3. Copie o token e ID da instância
+4. Configure no `.env.local`
 
-### Code Splitting
+## 🏗️ Estrutura do Projeto
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```
+whatsdocinho/
+├── pages/                 # Páginas Next.js
+│   ├── index.js          # Página principal
+│   ├── _app.js           # App wrapper
+│   └── api/              # API Routes
+├── lib/                  # Utilitários
+│   ├── hallo.js          # Cliente API Hallo
+│   └── supabase.js       # Cliente Supabase
+├── public/               # Arquivos estáticos
+├── tailwind.config.js    # Configuração Tailwind
+├── next.config.js        # Configuração Next.js
+└── vercel.json           # Configuração Vercel
+```
 
-### Analyzing the Bundle Size
+## 🔧 Tecnologias
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+- **Frontend**: Next.js 15, React 18, Tailwind CSS
+- **Backend**: Supabase (PostgreSQL), API Hallo
+- **Deploy**: Vercel
+- **Estilização**: Tailwind CSS
 
-### Making a Progressive Web App
+## 📱 Como Usar
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+1. **Cadastrar Contatos**
+   - Adicione nome, telefone e observações
+   - Telefones são validados automaticamente
 
-### Advanced Configuration
+2. **Criar Mensagens**
+   - Escolha entre texto, imagem, vídeo ou documento
+   - Preview em tempo real da mensagem
+   - Ative a mensagem que deseja usar
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+3. **Enviar Mensagens**
+   - Clique em "Testar envio" em qualquer contato
+   - A mensagem ativa será enviada automaticamente
+   - Suporte a mídia com legenda
 
-### Deployment
+## 🚨 Troubleshooting
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### Erro de Build
+- Verifique se todas as variáveis de ambiente estão configuradas
+- Certifique-se de que o Supabase está acessível
+- Confirme se a API Hallo está ativa
 
-### `npm run build` fails to minify
+### Erro de Envio
+- Verifique se a instância Hallo está conectada
+- Confirme se o número está no formato correto
+- Teste a API Hallo diretamente
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## 📄 Licença
+
+MIT License - veja o arquivo LICENSE para detalhes.
+
+## 🤝 Contribuição
+
+1. Fork o projeto
+2. Crie uma branch para sua feature
+3. Commit suas mudanças
+4. Push para a branch
+5. Abra um Pull Request
+
+---
+
+**Desenvolvido com ❤️ para facilitar o gerenciamento de contatos e mensagens WhatsApp**

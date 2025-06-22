@@ -554,6 +554,23 @@
   background: #ffcdd2;
 }
 
+.btn-test-send {
+  background: #25d366;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-left: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-test-send:hover {
+  background: #128c7e;
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
   .App {
