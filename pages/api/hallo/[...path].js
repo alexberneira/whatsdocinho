@@ -1,4 +1,15 @@
 export default async function handler(req, res) {
+  // Configurar CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  // Responder a requisições OPTIONS
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
   const { path = [] } = req.query;
   const { instance, token, action } = req.query;
   
@@ -22,9 +33,15 @@ export default async function handler(req, res) {
 
   const fetchOptions = {
     method: req.method,
-    headers: { ...req.headers },
+    headers: {},
   };
-  delete fetchOptions.headers.host;
+
+  // Copiar headers relevantes, excluindo host
+  Object.keys(req.headers).forEach(key => {
+    if (key.toLowerCase() !== 'host') {
+      fetchOptions.headers[key] = req.headers[key];
+    }
+  });
 
   // Adicionar body para métodos que aceitam
   if (!['GET', 'HEAD'].includes(req.method) && req.body) {
@@ -43,19 +60,33 @@ export default async function handler(req, res) {
   }
 
   try {
+    console.log('🚀 Making request to:', targetUrl);
+    console.log('📦 Fetch options:', {
+      method: fetchOptions.method,
+      headers: fetchOptions.headers,
+      hasBody: !!fetchOptions.body
+    });
+
     const response = await fetch(targetUrl, fetchOptions);
     const data = await response.text();
 
     console.log('📥 Response status:', response.status);
     console.log('📄 Response data:', data);
 
+    // Copiar headers da resposta
     response.headers.forEach((value, key) => {
       res.setHeader(key, value);
     });
+    
     res.status(response.status);
     res.send(data);
   } catch (error) {
     console.error('❌ Proxy error:', error);
-    res.status(500).json({ error: 'Proxy error', details: error.message });
+    res.status(500).json({ 
+      error: 'Proxy error', 
+      details: error.message,
+      targetUrl,
+      method: req.method
+    });
   }
 } 
