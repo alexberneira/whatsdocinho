@@ -4,15 +4,15 @@ const nextConfig = {
   images: {
     unoptimized: true
   },
-  // Configuração para API Routes
-  async rewrites() {
-    return [
-      {
-        source: '/api/hallo/:path*',
-        destination: '/api/hallo',
-      },
-    ];
-  },
+  // Configuração para API Routes - remover rewrites que podem causar conflito
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: '/api/hallo/:path*',
+  //       destination: '/api/hallo',
+  //     },
+  //   ];
+  // },
 }
 
 module.exports = nextConfig 
