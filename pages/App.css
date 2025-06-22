@@ -555,7 +555,7 @@
 }
 
 .btn-test-send {
-  background: #25d366;
+  background: #ff4757;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -568,7 +568,7 @@
 }
 
 .btn-test-send:hover {
-  background: #128c7e;
+  background: #ff3742;
 }
 
 /* Responsividade */
