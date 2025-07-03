@@ -459,7 +459,7 @@ function App() {
       return;
     }
 
-    if (!confirm(`Deseja enviar esta mensagem para todos os ${activeContacts.length} contatos ativos?\n\nCada envio terá um intervalo de 30 segundos.`)) {
+    if (!confirm(`Deseja enviar esta mensagem para todos os ${activeContacts.length} contatos ativos?\n\nCada envio terá um intervalo de 5 segundos.`)) {
       return;
     }
 
@@ -495,9 +495,9 @@ function App() {
         // Enviar mensagem
         await halloAPI.sendMessage(messageData);
         
-        // Aguardar 30 segundos antes do próximo envio (exceto no último)
+        // Aguardar 5 segundos antes do próximo envio (exceto no último)
         if (i < activeContacts.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 30000));
+          await new Promise(resolve => setTimeout(resolve, 5000));
         }
       }
 
